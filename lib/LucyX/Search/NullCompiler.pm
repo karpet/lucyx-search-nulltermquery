@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use base qw( Lucy::Search::Compiler );
 use Carp;
-use LucyX::Search::NullScorer;
+use LucyX::Search::NullMatcher;
 use Lucy::Search::Span;
 use Data::Dump qw( dump );
 
@@ -81,70 +81,50 @@ sub make_matcher {
 
     # Acquire a Lexicon and seek it to our query string.
     my $parent  = $self->get_parent;
-    my $term    = $parent->get_term;
-    my $regex   = $parent->get_regex;
-    my $suffix  = $parent->get_suffix;
     my $field   = $parent->get_field;
-    my $prefix  = $parent->get_prefix;
     my $lexicon = $lex_reader->lexicon( field => $field );
-    return unless $lexicon;
+
+    $DEBUG and warn "field:$field\n";
+
+    if ( !$lexicon ) {
+        warn "no lexicon for field:$field";
+        return;
+    }
 
     # Retrieve the correct Similarity for the Query's field.
     my $sim = $args{similarity} || $searchable->get_schema->fetch_sim($field);
-
-    $lexicon->seek( defined $prefix ? $prefix : '' );
 
     # Accumulate PostingLists for each matching term.
     my @posting_lists;
     my $include = $include{$$self};
     while ( defined( my $lex_term = $lexicon->get_term ) ) {
 
-        $DEBUG and warn sprintf(
-            "\n lex_term='%s'\n prefix=%s\n suffix=%s\n regex=%s\n",
+        $DEBUG and warn sprintf( "\n lex_term='%s'\n",
             ( defined $lex_term ? $lex_term : '[undef]' ),
-            ( defined $prefix   ? $prefix   : '[undef]' ),
-            ( defined $suffix   ? $suffix   : '[undef]' ),
-            ( defined $regex    ? $regex    : '[undef]' )
         );
-
-        # weed out non-matchers early.
-        if ( defined $suffix and index( $lex_term, $suffix ) < 0 ) {
+        
+        if (defined $lex_term && length $lex_term) {
             last unless $lexicon->next;
-            next;
         }
-        last if defined $prefix and index( $lex_term, $prefix ) != 0;
 
-        $DEBUG and carp "$term field:$field: term>$lex_term<";
-
-        if ($include) {
-            unless ( $lex_term =~ $regex ) {
-                last unless $lexicon->next;
-                next;
-            }
-        }
-        else {
-            if ( $lex_term =~ $regex ) {
-                last unless $lexicon->next;
-                next;
-            }
-        }
         my $posting_list = $plist_reader->posting_list(
             field => $field,
             term  => $lex_term,
         );
 
-        $DEBUG and carp "check posting_list";
-        if ($posting_list) {
+        if ( ( !defined $lex_term || !length $lex_term ) && $posting_list ) {
+            $DEBUG and carp "NULL posting_list";
             push @posting_lists, $posting_list;
             $parent->add_lex_term($lex_term);
         }
         last unless $lexicon->next;
     }
+
+    $DEBUG and warn dump \@posting_lists;
+
     return unless @posting_lists;
 
     $doc_freq{$$self} = scalar(@posting_lists);
-
-    $DEBUG and carp dump \@posting_lists;
 
     # Calculate and store the IDF
     my $max_doc = $searchable->doc_max;
@@ -161,7 +141,7 @@ sub make_matcher {
     # make final preparations
     $self->_perform_query_normalization($searchable);
 
-    return LucyX::Search::NullScorer->new(
+    return LucyX::Search::NullMatcher->new(
         posting_lists => \@posting_lists,
         compiler      => $self,
     );

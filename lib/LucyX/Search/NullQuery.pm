@@ -10,24 +10,20 @@ our $VERSION = '0.03';
 
 =head1 NAME
 
-LucyX::Search::NullQuery - Lucy query extension
+LucyX::Search::NullQuery - Lucy query extension for NULL values
 
 =head1 SYNOPSIS
 
  my $query = LucyX::Search::NullQuery->new(
-    term    => 'green*',
     field   => 'color',
  );
  my $hits = $searcher->hits( query => $query );
- 
+ # $hits == documents where the 'color' field is empty
 
 =head1 DESCRIPTION
 
 LucyX::Search::NullQuery extends the 
-Lucy::QueryParser syntax
-to support wildcards. This code is similar to the sample PrefixQuery
-code in the Lucy distribution and the KinoSearch::Search::WildCardQuery
-and Search::Query::Dialect::KSx::NullQuery module on CPAN.
+Lucy::QueryParser syntax to support NULL values.
 
 =head1 METHODS
 
@@ -37,11 +33,7 @@ methods are documented here.
 =cut
 
 # Inside-out member vars
-my %term;
 my %field;
-my %regex;
-my %prefix;
-my %suffix;
 my %lex_terms;
 
 =head2 new( I<args> )
@@ -53,87 +45,21 @@ for C<field> and C<term>.
 
 sub new {
     my ( $class, %args ) = @_;
-    my $term  = delete $args{term};
     my $field = delete $args{field};
     my $self  = $class->SUPER::new(%args);
-    confess("'term' param is required")
-        unless defined $term;
-    confess("Invalid term: '$term'")
-        unless $term =~ /[\*\?]/;
     confess("'field' param is required")
         unless defined $field;
-    $term{$$self}  = $term;
     $field{$$self} = $field;
-    $self->_build_regex($term);
     return $self;
 }
-
-sub _build_regex {
-    my ( $self, $term ) = @_;
-    $term = quotemeta($term);  # turn into a regexp that matches a literal str
-    $term =~ s/\\\*/.*/g;          # convert wildcards into regex
-    $term =~ s/\\\?/.?/g;          # convert wildcards into regex
-    $term =~ s/(?:\.\*){2,}/.*/g;  # eliminate multiple consecutive wild cards
-    $term =~ s/(?:\.\?){2,}/.?/g;  # eliminate multiple consecutive wild cards
-    $term =~ s/^/^/;    # unless $term =~ s/^\.\*//;    # anchor the regexp to
-    $term
-        =~ s/\z/\\z/;  # unless $term =~ s/\.\*\z//;    # the ends of the term
-    $regex{$$self} = qr/$term/;
-
-    # get the literal prefix of the regexp, if any.
-    if ($regex{$$self} =~ m<^
-            (?:    # prefix for qr//'s, without allowing /i :
-                \(\? ([a-hj-z]*) (?:-[a-z]*)?:
-            )?
-            (\\[GA]|\^) # anchor
-            ([^#\$()*+.?[\]\\^]+) # literal pat (no metachars or comments)
-        >x
-        )
-    {
-        {
-            my ( $mod, $anchor, $prefix ) = ( $1 || '', $2, $3 );
-            $anchor eq '^' and $mod =~ /m/ and last;
-            for ($prefix) {
-                $mod =~ /x/ and s/\s+//g;
-            }
-            $prefix{$$self} = $prefix;
-        }
-    }
-
-    if ( $term =~ m/\.[\?\*](\w+)/ ) {
-        my $suffix = $1;
-        $suffix{$$self} = $suffix;
-    }
-
-}
-
-=head2 get_term
 
 =head2 get_field
 
 Retrieve the value set in new().
 
-=head2 get_regex
-
-Retrieve the qr// object representing I<term>.
-
-=head2 get_prefix
-
-Retrieve the literal string (if any) that precedes the wildcards
-in I<term>.
-
-=head2 get_suffix
-
-Retrieve the literal string (if any) that follows the wildcards
-in I<term>.
-
 =cut
 
-sub get_term   { my $self = shift; return $term{$$self} }
-sub get_field  { my $self = shift; return $field{$$self} }
-sub get_regex  { my $self = shift; return $regex{$$self} }
-sub get_prefix { my $self = shift; return $prefix{$$self} }
-sub get_suffix { my $self = shift; return $suffix{$$self} }
+sub get_field { my $self = shift; return $field{$$self} }
 
 =head2 add_lex_term( I<term> )
 
@@ -162,11 +88,7 @@ sub get_lex_terms {
 
 sub DESTROY {
     my $self = shift;
-    delete $term{$$self};
     delete $field{$$self};
-    delete $prefix{$$self};
-    delete $suffix{$$self};
-    delete $regex{$$self};
     delete $lex_terms{$$self};
     $self->SUPER::DESTROY;
 }
@@ -177,7 +99,7 @@ Returns true (1) if the object represents the same kind of query
 clause as another NullQuery.
 
 NOTE: Currently a NOTNullQuery and a NullQuery object will
-evaluate as equal if they have the same terma and field. This is a bug.
+evaluate as equal if they have the same field. This is a bug.
 
 =cut
 
@@ -185,10 +107,8 @@ sub equals {
     my ( $self, $other ) = @_;
     return 0 unless blessed($other);
     return 0
-        unless $other->isa("Search::Query::Dialect::Lucy::NullQuery");
-    return 0 unless $field{$$self} eq $field{$$other};
-    return 0 unless $term{$$self}  eq $term{$$other};
-    return 1;
+        unless $other->isa("LucyX::Search::NullQuery");
+    return $self->get_field eq $other->get_field;
 }
 
 =head2 to_string
@@ -199,7 +119,7 @@ Returns the query clause the object represents.
 
 sub to_string {
     my $self = shift;
-    return "$field{$$self}:$term{$$self}";
+    return join( ':', $self->get_field, "NULL" );
 }
 
 =head2 make_compiler
@@ -269,7 +189,7 @@ L<http://search.cpan.org/dist/LucyX-Search-NullQuery/>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2011 Peter Karman.
+Copyright 2013 Peter Karman.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
