@@ -1,0 +1,12 @@
+Changes
+lib/LucyX/Search/NOTNullQuery.pm
+lib/LucyX/Search/NullCompiler.pm
+lib/LucyX/Search/NullQuery.pm
+lib/LucyX/Search/NullScorer.pm
+Makefile.PL
+MANIFEST
+README
+t/00-load.t
+t/01-search.t
+t/pod-coverage.t
+t/pod.t
