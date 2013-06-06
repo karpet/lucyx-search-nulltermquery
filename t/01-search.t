@@ -21,10 +21,16 @@ my $fulltext = Lucy::Plan::FullTextType->new(
     analyzer => $analyzer,
     sortable => 1,
 );
-$schema->spec_field( name => 'title',  type => $fulltext );
-$schema->spec_field( name => 'color',  type => $fulltext );
-$schema->spec_field( name => 'date',   type => $fulltext );
-$schema->spec_field( name => 'option', type => $fulltext );
+my $fulltext_nosort = Lucy::Plan::FullTextType->new(
+    analyzer => $analyzer,
+    sortable => 0,
+);
+$schema->spec_field( name => 'uri',       type => $fulltext );
+$schema->spec_field( name => 'nullfield', type => $fulltext );
+$schema->spec_field( name => 'title',     type => $fulltext );
+$schema->spec_field( name => 'color',     type => $fulltext_nosort );
+$schema->spec_field( name => 'date',      type => $fulltext );
+$schema->spec_field( name => 'option',    type => $fulltext_nosort );
 
 my $indexer = Lucy::Index::Indexer->new(
     index    => $invindex,
@@ -54,15 +60,15 @@ my %docs = (
     },
     'doc4' => {
         title  => 'Porphyria, Acute Intermittent',
-        color  => 'white',
+        color  => '',
         date   => '20100510',
         option => 'c',
     },
     'doc5' => {
-        title  => 'Cholecystitis, Acute',
+        title  => '',
         color  => 'white',
         date   => '20100510',
-        option => 'c',
+        option => 'e',
     },
     'doc6' => {
         title  => 'Acute Kidney Injury',
@@ -74,7 +80,7 @@ my %docs = (
 
 # set up the index
 for my $doc ( keys %docs ) {
-    $indexer->add_doc( $docs{$doc} );
+    $indexer->add_doc( { %{ $docs{$doc} }, uri => $doc } );
 }
 
 $indexer->commit;
@@ -82,20 +88,12 @@ $indexer->commit;
 my $searcher = Lucy::Search::IndexSearcher->new( index => $invindex, );
 
 # search
-my %queries2 = (
-    'color:re*'     => 1,
-    'color:re?'     => 1,
-    'color:br?wn'   => 1,
-    'color:*n'      => 2,
-    'NOT option:?*' => 1,
-    'title:*oc*'    => 4,
-);
-
 my %queries = (
-    'title:*acute*' => 6,
-    'title:*cute*'  => 6,
-    'title:*kemia*' => 2,
-    'title:*idney*' => 1
+    'color:NULL'     => 1,
+    'color!:NULL'    => 5,
+    'option:NULL'    => 1,
+    'title!:NULL'    => 5,
+    'nullfield:NULL' => 6,
 );
 
 for my $str ( sort keys %queries ) {
@@ -135,24 +133,14 @@ done_testing( scalar( keys %queries ) + 2 );
 sub make_query {
     my $str = shift;
 
-    my ( $field, $term ) = ( $str =~ m/(\w+):(\S+)/ );
+    my ( $field, $op ) = ( $str =~ m/(\w+)(!?):NULL/ );
+    diag("field == \'$field\'  op=$op");
     my $query;
-    if ( $str =~ m/NOT/ ) {
-        $query = LucyX::Search::NOTNullQuery->new(
-            field => $field,
-            term  => $term,
-        );
+    if ( $op eq '!:' ) {
+        $query = LucyX::Search::NOTNullQuery->new( field => $field, );
     }
     else {
-        print "\n";
-        print "field == \'$field\'\n";
-        print "term  == \'$term\'\n";
-
-        $query = LucyX::Search::NullQuery->new(
-            field => $field,
-            term  => $term,
-        );
+        $query = LucyX::Search::NullQuery->new( field => $field, );
     }
     return $query;
-
 }
