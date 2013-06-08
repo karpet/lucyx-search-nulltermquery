@@ -37,7 +37,7 @@ Only new or overridden methods are documented.
 
 =head2 new( I<args> )
 
-Returns a new Scorer object.
+Returns a new Matcher object.
 
 =cut
 
@@ -47,20 +47,16 @@ sub new {
     my $compiler      = delete $args{compiler};
     my $posting_lists = delete $args{posting_lists};
     my $self          = $class->SUPER::new(%args);
-    
-    warn "posting_lists: " . dump($posting_lists);
 
     my %hits;    # The keys are the doc nums; the values the tfs.
     for my $posting_list (@$posting_lists) {
-        warn "posting_list doc_freq: " . $posting_list->get_doc_freq();
         while ( my $doc_id = $posting_list->next ) {
-            warn "doc_id=$doc_id";
             my $posting = $posting_list->get_posting;
             $hits{$doc_id} += $posting->get_freq;
         }
     }
 
-    warn "hits: " . dump \%hits;
+    #warn "hits: " . dump \%hits;
 
     $sim{$$self}        = $compiler->get_similarity;
     $doc_ids{$$self}    = [ sort { $a <=> $b } keys %hits ];
@@ -111,7 +107,7 @@ sub score {
     my $doc_id    = $$dids[$pos];
     my $term_freq = $term_freqs{$$self}->{$doc_id};
 
-    carp "doc_id=$doc_id  term_freq=$term_freq  boost=$boost";
+    #carp "doc_id=$doc_id  term_freq=$term_freq  boost=$boost";
     return ( $boost * $sim{$$self}->tf($term_freq) ) / 10;
 }
 

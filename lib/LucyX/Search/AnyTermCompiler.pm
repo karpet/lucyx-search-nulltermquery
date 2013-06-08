@@ -87,7 +87,8 @@ sub make_matcher {
     $DEBUG and warn "field:$field\n";
 
     if ( !$lexicon ) {
-        warn "no lexicon for field:$field";
+
+        #warn "no lexicon for field:$field";
         return;
     }
 
@@ -105,6 +106,7 @@ sub make_matcher {
 
         if ( !defined $lex_term || !length $lex_term ) {
             last unless $lexicon->next;
+            next;
         }
 
         my $posting_list = $plist_reader->posting_list(
@@ -112,8 +114,7 @@ sub make_matcher {
             term  => $lex_term,
         );
 
-        if ( ( !defined $lex_term || !length $lex_term ) && $posting_list ) {
-            $DEBUG and carp "NULL posting_list";
+        if ($posting_list) {
             push @posting_lists, $posting_list;
             $parent->add_lex_term($lex_term);
         }

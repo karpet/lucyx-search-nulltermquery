@@ -80,7 +80,10 @@ my %docs = (
 
 # set up the index
 for my $doc ( keys %docs ) {
-    $indexer->add_doc( { %{ $docs{$doc} }, uri => $doc } );
+    my $doc_ref = { %{ $docs{$doc} }, uri => $doc };
+
+    #diag( dump $doc_ref );
+    $indexer->add_doc($doc_ref);
 }
 
 $indexer->commit;
@@ -112,17 +115,16 @@ for my $str ( sort keys %queries ) {
         num_wanted => 10,       # more than we have
     );
 
-    is( $hits->total_hits, $hits_expected, "$str = $hits_expected" );
+    is( $hits->total_hits, $hits_expected, "$str == $hits_expected" );
 
     if ( $hits->total_hits != $hits_expected ) {
         diag( dump( $query->dump ) );
-    }
 
-    my $count = 0;
-    while ( my $hit = $hits->next ) {
-        $count++;
-        print "\t", $count, "\n";
-        ## my $desc = $hit->{desc};
+        my $count = 0;
+        while ( my $hit = $hits->next ) {
+            $count++;
+            diag( " [$count] hit: " . $hit->{uri} );
+        }
     }
 
 }
@@ -133,8 +135,9 @@ done_testing( scalar( keys %queries ) + 2 );
 sub make_query {
     my $str = shift;
 
-    my ( $field, $op ) = ( $str =~ m/(\w+)(!?):NULL/ );
-    diag("field == \'$field\'  op=$op");
+    my ( $field, $op ) = ( $str =~ m/(\w+)(!?:)NULL/ );
+
+    #diag("field == \'$field\'  op=$op");
     my $query;
     if ( $op eq '!:' ) {
         $query = LucyX::Search::AnyTermQuery->new( field => $field, );
