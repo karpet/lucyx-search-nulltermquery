@@ -18,7 +18,7 @@ LucyX::Search::AnyTermQuery - Lucy query extension for not NULL values
     field   => 'color',
  );
  my $hits = $searcher->hits( query => $query );
- # $hits == documents where the 'color' field is empty
+ # $hits == documents where the 'color' field is not empty
 
 =head1 DESCRIPTION
 

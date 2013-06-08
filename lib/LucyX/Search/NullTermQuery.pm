@@ -24,7 +24,7 @@ LucyX::Search::NullTermQuery - Lucy query extension for NULL values
 NullTermQuery is for matching documents in a Lucy index
 that have no value for a field.
 
-NullTermQuery is a NOTQuery negating an AnyTermQuery.
+NullTermQuery isa NOTQuery negating an AnyTermQuery.
 
 =head1 METHODS
 
@@ -102,7 +102,7 @@ L<http://search.cpan.org/dist/LucyX-Search-NullTermQuery/>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2011 Peter Karman.
+Copyright 2013 Peter Karman.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

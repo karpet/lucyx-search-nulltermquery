@@ -39,7 +39,7 @@ LucyX::Search::AnyTermCompiler - Lucy query extension
 =head1 METHODS
 
 This class isa Lucy::Search::Compiler subclass. Only new
-or overridden methods are documented .
+or overridden methods are documented.
 
 =cut
 
@@ -330,7 +330,7 @@ L<http://search.cpan.org/dist/LucyX-Search-NullTermQuery/>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2011 Peter Karman.
+Copyright 2013 Peter Karman.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

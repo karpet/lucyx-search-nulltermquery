@@ -21,7 +21,7 @@ WriteMakefile(
     PL_FILES  => {},
     PREREQ_PM => {
         'Test::More' => 0,
-        'Lucy'       => '0.001000',
+        'Lucy'       => '0.003000',
         'Data::Dump' => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
@@ -33,11 +33,11 @@ WriteMakefile(
                 resources => {
                     license => 'http://dev.perl.org/licenses/',
                     homepage =>
-                        'https://github.com/karpet/lucyx-search-wildcardquery',
+                        'https://github.com/karpet/lucyx-search-nulltermquery',
                     bugtracker =>
                         'http://rt.cpan.org/NoAuth/Bugs.html?Dist=LucyX-Search-NullTermQuery',
                     repository =>
-                        'https://github.com/karpet/lucyx-search-wildcardquery',
+                        'https://github.com/karpet/lucyx-search-nulltermquery',
                 },
             }
         )

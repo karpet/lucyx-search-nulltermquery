@@ -156,7 +156,7 @@ L<http://search.cpan.org/dist/LucyX-Search-NullTermQuery/>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2011 Peter Karman.
+Copyright 2013 Peter Karman.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
