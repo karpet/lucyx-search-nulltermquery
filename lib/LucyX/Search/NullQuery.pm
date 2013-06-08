@@ -6,7 +6,7 @@ use Carp;
 use Scalar::Util qw( blessed );
 use LucyX::Search::NullCompiler;
 
-our $VERSION = '0.03';
+our $VERSION = '0.001';
 
 =head1 NAME
 
@@ -107,7 +107,7 @@ sub equals {
     my ( $self, $other ) = @_;
     return 0 unless blessed($other);
     return 0
-        unless $other->isa("LucyX::Search::NullQuery");
+        unless $other->isa( ref $self );
     return $self->get_field eq $other->get_field;
 }
 

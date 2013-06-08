@@ -5,7 +5,7 @@ use base qw( Lucy::Search::Matcher );
 use Carp;
 use Data::Dump qw( dump );
 
-our $VERSION = '0.03';
+our $VERSION = '0.001';
 
 # Inside-out member vars.
 my ( %doc_ids, %pos, %boosts, %sim, %term_freqs );

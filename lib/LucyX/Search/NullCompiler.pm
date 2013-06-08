@@ -7,7 +7,7 @@ use LucyX::Search::NullMatcher;
 use Lucy::Search::Span;
 use Data::Dump qw( dump );
 
-our $VERSION = '0.03';
+our $VERSION = '0.001';
 
 my $DEBUG = $ENV{LUCYX_DEBUG} || 0;
 
@@ -65,7 +65,7 @@ sub new {
 
 =head2 make_matcher( I<args> )
 
-Returns a Search::Query::Dialect::Lucy::Scorer object.
+Returns a LucyX::Search::NullMatcher object.
 
 =cut
 
