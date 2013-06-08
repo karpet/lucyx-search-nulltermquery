@@ -8,8 +8,8 @@ my $invindex = tempdir( CLEANUP => 1 );
 
 use Lucy;
 
-use_ok('LucyX::Search::NOTNullQuery');
-use_ok('LucyX::Search::NullQuery');
+use_ok('LucyX::Search::AnyTermQuery');
+use_ok('LucyX::Search::NullTermQuery');
 
 my $case_folder = Lucy::Analysis::CaseFolder->new;
 my $tokenizer   = Lucy::Analysis::RegexTokenizer->new;
@@ -137,10 +137,10 @@ sub make_query {
     diag("field == \'$field\'  op=$op");
     my $query;
     if ( $op eq '!:' ) {
-        $query = LucyX::Search::NOTNullQuery->new( field => $field, );
+        $query = LucyX::Search::NOTNullTermQuery->new( field => $field, );
     }
     else {
-        $query = LucyX::Search::NullQuery->new( field => $field, );
+        $query = LucyX::Search::NullTermQuery->new( field => $field, );
     }
     return $query;
 }

@@ -11,10 +11,10 @@ if ( $MM_Version =~ /_/ )    # dev version
 }
 
 WriteMakefile(
-    NAME          => 'LucyX::Search::NullQuery',
+    NAME          => 'LucyX::Search::NullTermQuery',
     AUTHOR        => q{Peter Karman <karman@cpan.org>},
-    VERSION_FROM  => 'lib/LucyX/Search/NullQuery.pm',
-    ABSTRACT_FROM => 'lib/LucyX/Search/NullQuery.pm',
+    VERSION_FROM  => 'lib/LucyX/Search/NullTermQuery.pm',
+    ABSTRACT_FROM => 'lib/LucyX/Search/NullTermQuery.pm',
     ( $ExtUtils::MakeMaker::VERSION >= 6.3002
         ? ( 'LICENSE' => 'perl' )
         : () ),
@@ -25,7 +25,7 @@ WriteMakefile(
         'Data::Dump' => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean => { FILES    => 'LucyX-Search-NullQuery-*' },
+    clean => { FILES    => 'LucyX-Search-NullTermQuery-*' },
     ( $MM_Version >= 6.48 ? ( MIN_PERL_VERSION => '5.8.3' ) : () ),
     ( $MM_Version >= 6.31 ? ( LICENSE          => 'perl' )  : () ),
     (   $MM_Version <= 6.44 ? ()
@@ -35,7 +35,7 @@ WriteMakefile(
                     homepage =>
                         'https://github.com/karpet/lucyx-search-wildcardquery',
                     bugtracker =>
-                        'http://rt.cpan.org/NoAuth/Bugs.html?Dist=LucyX-Search-NullQuery',
+                        'http://rt.cpan.org/NoAuth/Bugs.html?Dist=LucyX-Search-NullTermQuery',
                     repository =>
                         'https://github.com/karpet/lucyx-search-wildcardquery',
                 },

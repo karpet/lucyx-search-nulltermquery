@@ -1,4 +1,4 @@
-package LucyX::Search::NullQuery;
+package LucyX::Search::NullTermQuery;
 use strict;
 use warnings;
 use base qw( Lucy::Search::Query );
@@ -10,11 +10,11 @@ our $VERSION = '0.001';
 
 =head1 NAME
 
-LucyX::Search::NullQuery - Lucy query extension for NULL values
+LucyX::Search::NullTermQuery - Lucy query extension for NULL values
 
 =head1 SYNOPSIS
 
- my $query = LucyX::Search::NullQuery->new(
+ my $query = LucyX::Search::NullTermQuery->new(
     field   => 'color',
  );
  my $hits = $searcher->hits( query => $query );
@@ -22,7 +22,7 @@ LucyX::Search::NullQuery - Lucy query extension for NULL values
 
 =head1 DESCRIPTION
 
-LucyX::Search::NullQuery extends the 
+LucyX::Search::NullTermQuery extends the 
 Lucy::QueryParser syntax to support NULL values.
 
 =head1 METHODS
@@ -38,7 +38,7 @@ my %lex_terms;
 
 =head2 new( I<args> )
 
-Create a new NullQuery object. I<args> must contain key/value pairs
+Create a new NullTermQuery object. I<args> must contain key/value pairs
 for C<field> and C<term>.
 
 =cut
@@ -96,9 +96,9 @@ sub DESTROY {
 =head2 equals
 
 Returns true (1) if the object represents the same kind of query
-clause as another NullQuery.
+clause as another NullTermQuery.
 
-NOTE: Currently a NOTNullQuery and a NullQuery object will
+NOTE: Currently a NOTNullTermQuery and a NullTermQuery object will
 evaluate as equal if they have the same field. This is a bug.
 
 =cut
@@ -155,14 +155,14 @@ Peter Karman, C<< <karman at cpan.org> >>
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-lucyx-search-wildcardquery at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=LucyX-Search-NullQuery>.  I will be notified, and then you'll
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=LucyX-Search-NullTermQuery>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc LucyX::Search::NullQuery
+    perldoc LucyX::Search::NullTermQuery
 
 
 You can also look for information at:
@@ -171,19 +171,19 @@ You can also look for information at:
 
 =item * RT: CPAN's request tracker
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=LucyX-Search-NullQuery>
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=LucyX-Search-NullTermQuery>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
-L<http://annocpan.org/dist/LucyX-Search-NullQuery>
+L<http://annocpan.org/dist/LucyX-Search-NullTermQuery>
 
 =item * CPAN Ratings
 
-L<http://cpanratings.perl.org/d/LucyX-Search-NullQuery>
+L<http://cpanratings.perl.org/d/LucyX-Search-NullTermQuery>
 
 =item * Search CPAN
 
-L<http://search.cpan.org/dist/LucyX-Search-NullQuery/>
+L<http://search.cpan.org/dist/LucyX-Search-NullTermQuery/>
 
 =back
 

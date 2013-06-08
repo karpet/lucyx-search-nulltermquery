@@ -1,7 +1,7 @@
-LucyX-Search-NullQuery
+LucyX-Search-NullTermQuery
 
-LucyX::Search::NullQuery is an extension to Lucy::Search::Query
-for wildcard terms, like 'foo*' and 'ba?r'.
+LucyX::Search::NullTermQuery is an extension to Lucy::Search::Query
+for matching field=NULL or field!=NULL.
 
 INSTALLATION
 
@@ -17,26 +17,26 @@ SUPPORT AND DOCUMENTATION
 After installing, you can find documentation for this module with the
 perldoc command.
 
-    perldoc LucyX::Search::NullQuery
+    perldoc LucyX::Search::NullTermQuery
 
 You can also look for information at:
 
     RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=LucyX-Search-NullQuery
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=LucyX-Search-NullTermQuery
 
     AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/LucyX-Search-NullQuery
+        http://annocpan.org/dist/LucyX-Search-NullTermQuery
 
     CPAN Ratings
-        http://cpanratings.perl.org/d/LucyX-Search-NullQuery
+        http://cpanratings.perl.org/d/LucyX-Search-NullTermQuery
 
     Search CPAN
-        http://search.cpan.org/dist/LucyX-Search-NullQuery/
+        http://search.cpan.org/dist/LucyX-Search-NullTermQuery/
 
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2011 Peter Karman
+Copyright (C) 2013 Peter Karman
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

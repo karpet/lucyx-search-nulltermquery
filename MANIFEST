@@ -1,7 +1,7 @@
 Changes
-lib/LucyX/Search/NOTNullQuery.pm
+lib/LucyX/Search/NOTNullTermQuery.pm
 lib/LucyX/Search/NullCompiler.pm
-lib/LucyX/Search/NullQuery.pm
+lib/LucyX/Search/NullTermQuery.pm
 lib/LucyX/Search/NullScorer.pm
 Makefile.PL
 MANIFEST

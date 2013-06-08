@@ -126,7 +126,7 @@ Peter Karman, C<< <karman at cpan.org> >>
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-lucyx-search-wildcardquery at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=LucyX-Search-NullQuery>.  I will be notified, and then you'll
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=LucyX-Search-NullTermQuery>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
 
@@ -136,7 +136,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc LucyX::Search::NullQuery
+    perldoc LucyX::Search::NullTermQuery
 
 
 You can also look for information at:
@@ -145,19 +145,19 @@ You can also look for information at:
 
 =item * RT: CPAN's request tracker
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=LucyX-Search-NullQuery>
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=LucyX-Search-NullTermQuery>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
-L<http://annocpan.org/dist/LucyX-Search-NullQuery>
+L<http://annocpan.org/dist/LucyX-Search-NullTermQuery>
 
 =item * CPAN Ratings
 
-L<http://cpanratings.perl.org/d/LucyX-Search-NullQuery>
+L<http://cpanratings.perl.org/d/LucyX-Search-NullTermQuery>
 
 =item * Search CPAN
 
-L<http://search.cpan.org/dist/LucyX-Search-NullQuery/>
+L<http://search.cpan.org/dist/LucyX-Search-NullTermQuery/>
 
 =back
 
