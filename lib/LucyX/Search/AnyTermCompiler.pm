@@ -75,11 +75,11 @@ sub make_matcher {
     my $seg_reader = $args{reader};
     my $searchable = $searchable{$$self};
 
-    # Retrieve low-level components LexiconReader and PostingListReader.
+    # Retrieve low-level components
     my $lex_reader   = $seg_reader->obtain("Lucy::Index::LexiconReader");
     my $plist_reader = $seg_reader->obtain("Lucy::Index::PostingListReader");
 
-    # Acquire a Lexicon and seek it to our query string.
+    # Acquire a Lexicon
     my $parent  = $self->get_parent;
     my $field   = $parent->get_field;
     my $lexicon = $lex_reader->lexicon( field => $field );
