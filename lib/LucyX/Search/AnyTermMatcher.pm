@@ -1,4 +1,4 @@
-package LucyX::Search::NullMatcher;
+package LucyX::Search::AnyTermMatcher;
 use strict;
 use warnings;
 use base qw( Lucy::Search::Matcher );
@@ -22,7 +22,7 @@ sub DESTROY {
 
 =head1 NAME
 
-LucyX::Search::NullMatcher - Lucy query extension
+LucyX::Search::AnyTermMatcher - Lucy query extension
 
 =head1 SYNOPSIS
 
@@ -128,9 +128,6 @@ Peter Karman, C<< <karman at cpan.org> >>
 Please report any bugs or feature requests to C<bug-lucyx-search-wildcardquery at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=LucyX-Search-NullTermQuery>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-
-
 
 =head1 SUPPORT
 

@@ -1,9 +1,9 @@
-package LucyX::Search::NullCompiler;
+package LucyX::Search::AnyTermCompiler;
 use strict;
 use warnings;
 use base qw( Lucy::Search::Compiler );
 use Carp;
-use LucyX::Search::NullMatcher;
+use LucyX::Search::AnyTermMatcher;
 use Lucy::Search::Span;
 use Data::Dump qw( dump );
 
@@ -30,7 +30,7 @@ sub DESTROY {
 
 =head1 NAME
 
-LucyX::Search::NullCompiler - Lucy query extension
+LucyX::Search::AnyTermCompiler - Lucy query extension
 
 =head1 SYNOPSIS
 
@@ -65,7 +65,7 @@ sub new {
 
 =head2 make_matcher( I<args> )
 
-Returns a LucyX::Search::NullMatcher object.
+Returns a LucyX::Search::AnyTermMatcher object.
 
 =cut
 
@@ -102,8 +102,8 @@ sub make_matcher {
         $DEBUG and warn sprintf( "\n lex_term='%s'\n",
             ( defined $lex_term ? $lex_term : '[undef]' ),
         );
-        
-        if (defined $lex_term && length $lex_term) {
+
+        if ( !defined $lex_term || !length $lex_term ) {
             last unless $lexicon->next;
         }
 
@@ -141,7 +141,7 @@ sub make_matcher {
     # make final preparations
     $self->_perform_query_normalization($searchable);
 
-    return LucyX::Search::NullMatcher->new(
+    return LucyX::Search::AnyTermMatcher->new(
         posting_lists => \@posting_lists,
         compiler      => $self,
     );

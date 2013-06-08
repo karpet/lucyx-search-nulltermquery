@@ -1,50 +1,46 @@
-package LucyX::Search::NOTNullTermQuery;
+package LucyX::Search::NullTermQuery;
 use strict;
 use warnings;
 use base qw( Lucy::Search::NOTQuery );
 use Carp;
-use LucyX::Search::NullTermQuery;
+use LucyX::Search::AnyTermQuery;
 
 our $VERSION = '0.001';
 
 =head1 NAME
 
-LucyX::Search::NOTNullTermQuery - Lucy query extension
+LucyX::Search::NullTermQuery - Lucy query extension for NULL values
 
 =head1 SYNOPSIS
 
 
- my $query = LucyX::Search::NOTNullTermQuery->new(
-    term    => 'green*',
+ my $query = LucyX::Search::NullTermQuery->new(
     field   => 'color',
  );
  my $hits = $searcher->hits( query => $query );
  
 =head1 DESCRIPTION
 
-If a NullTermQuery is equivalent to this:
+NullTermQuery is for matching documents in a Lucy index
+that have no value for a field.
 
- $term =~ m/$query/
-
-then a NOTNullTermQuery is equivalent to this:
-
- $term !~ m/$query/
+NullTermQuery is a NOTQuery negating an AnyTermQuery.
 
 =head1 METHODS
 
 This class isa Lucy::Search::NOTQuery subclass.
 Only new or overridden methods are documented.
 
-=head2 new( term => $term, field => $field )
+=head2 new( field => $field )
 
-Returns a NOTNullTermQuery.
+Returns a NullTermQuery.
 
 =cut
 
 sub new {
     my ( $class, %args ) = @_;
-    my $wc_query = LucyX::Search::NullTermQuery->new(%args);
-    return $class->SUPER::new( negated_query => $wc_query, );
+    my $any_term_query = LucyX::Search::AnyTermQuery->new(%args);
+    return $class->SUPER::new( negated_query => $any_term_query, );
 }
 
 =head2 to_string
@@ -55,7 +51,7 @@ Returns the query clause the object represents.
 
 sub to_string {
     my $self = shift;
-    return "NOT " . $self->get_negated_query->to_string();
+    return sprintf( "%s:NULL", $self->get_negated_query->get_field() );
 }
 
 1;

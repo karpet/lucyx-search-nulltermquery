@@ -137,7 +137,7 @@ sub make_query {
     diag("field == \'$field\'  op=$op");
     my $query;
     if ( $op eq '!:' ) {
-        $query = LucyX::Search::NOTNullTermQuery->new( field => $field, );
+        $query = LucyX::Search::AnyTermQuery->new( field => $field, );
     }
     else {
         $query = LucyX::Search::NullTermQuery->new( field => $field, );

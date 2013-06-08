@@ -1,20 +1,20 @@
-package LucyX::Search::NullTermQuery;
+package LucyX::Search::AnyTermQuery;
 use strict;
 use warnings;
 use base qw( Lucy::Search::Query );
 use Carp;
 use Scalar::Util qw( blessed );
-use LucyX::Search::NullCompiler;
+use LucyX::Search::AnyTermCompiler;
 
 our $VERSION = '0.001';
 
 =head1 NAME
 
-LucyX::Search::NullTermQuery - Lucy query extension for NULL values
+LucyX::Search::AnyTermQuery - Lucy query extension for not NULL values
 
 =head1 SYNOPSIS
 
- my $query = LucyX::Search::NullTermQuery->new(
+ my $query = LucyX::Search::AnyTermQuery->new(
     field   => 'color',
  );
  my $hits = $searcher->hits( query => $query );
@@ -22,7 +22,7 @@ LucyX::Search::NullTermQuery - Lucy query extension for NULL values
 
 =head1 DESCRIPTION
 
-LucyX::Search::NullTermQuery extends the 
+LucyX::Search::AnyTermQuery extends the 
 Lucy::QueryParser syntax to support NULL values.
 
 =head1 METHODS
@@ -38,7 +38,7 @@ my %lex_terms;
 
 =head2 new( I<args> )
 
-Create a new NullTermQuery object. I<args> must contain key/value pairs
+Create a new AnyTermQuery object. I<args> must contain key/value pairs
 for C<field> and C<term>.
 
 =cut
@@ -96,9 +96,9 @@ sub DESTROY {
 =head2 equals
 
 Returns true (1) if the object represents the same kind of query
-clause as another NullTermQuery.
+clause as another AnyTermQuery.
 
-NOTE: Currently a NOTNullTermQuery and a NullTermQuery object will
+NOTE: Currently a AnyTermQuery and a NullTermQuery object will
 evaluate as equal if they have the same field. This is a bug.
 
 =cut
@@ -119,7 +119,7 @@ Returns the query clause the object represents.
 
 sub to_string {
     my $self = shift;
-    return join( ':', $self->get_field, "NULL" );
+    return sprintf( "NOT %s:NULL", $self->get_field );
 }
 
 =head2 make_compiler
@@ -134,7 +134,7 @@ sub make_compiler {
     my $subordinate = delete $args{subordinate};    # new in Lucy 0.2.2
     $args{parent}  = $self;
     $args{include} = 1;
-    my $compiler = LucyX::Search::NullCompiler->new(%args);
+    my $compiler = LucyX::Search::AnyTermCompiler->new(%args);
 
     # unlike Search::Query synopsis, normalize()
     # is called internally in $compiler.
