@@ -64,8 +64,8 @@ sub new {
 
 Returns a Lucy::Search::ORMatcher object.
 
-make_matcher() creates an ORQuery internally using all
-the terms associated with the parent AnyTermQuery->get_field() value,
+make_matcher() creates a Lucy::Search::ORQuery internally using all
+the terms associated with the parent AnyTermQuery field value,
 and returns the ORQuery's Matcher.
 
 =cut
@@ -122,30 +122,55 @@ sub make_matcher {
 
 }
 
+=head2 get_weight
+
+Delegates to ORCompiler child.
+
+=cut
+
 sub get_weight {
     my $self = shift;
     return $ORCompiler{$$self}->get_weight();
 }
+
+=head2 get_similarity
+
+Delegates to ORCompiler child.
+
+=cut
 
 sub get_similarity {
     my $self = shift;
     return $ORCompiler{$$self}->get_similarity();
 }
 
+=head2 normalize
+
+Delegates to ORCompiler child.
+
+=cut
+
 sub normalize {
     my $self = shift;
     return $ORCompiler{$$self}->normalize();
 }
+
+=head2 sum_of_squared_weights
+
+Delegates to ORCompiler child.
+
+=cut
 
 sub sum_of_squared_weights {
     my $self = shift;
     return $ORCompiler{$$self}->sum_of_squared_weights();
 }
 
-sub apply_norm_factor {
-    my $self = shift;
-    return $self->SUPER::apply_norm_factor(@_);
-}
+=head2 highlight_spans
+
+Delegates to ORCompiler child.
+
+=cut
 
 sub highlight_spans {
     my $self = shift;
