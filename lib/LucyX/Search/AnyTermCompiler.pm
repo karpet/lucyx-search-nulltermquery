@@ -113,6 +113,8 @@ sub make_matcher {
 
     return if !@terms;
 
+    $DEBUG and warn dump \@terms;
+
     my $or_query = Lucy::Search::ORQuery->new( children => \@terms, );
     $ORQuery{$$self} = $or_query;
     my $or_compiler
