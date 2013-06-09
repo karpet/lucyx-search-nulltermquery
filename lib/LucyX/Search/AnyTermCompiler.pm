@@ -3,8 +3,8 @@ use strict;
 use warnings;
 use base qw( Lucy::Search::Compiler );
 use Carp;
-use LucyX::Search::AnyTermMatcher;
-use Lucy::Search::Span;
+use Lucy::Search::ORQuery;
+use Lucy::Search::TermQuery;
 use Data::Dump qw( dump );
 
 our $VERSION = '0.001';
@@ -12,19 +12,14 @@ our $VERSION = '0.001';
 my $DEBUG = $ENV{LUCYX_DEBUG} || 0;
 
 # inside out vars
-my ( %include, %searchable, %idf, %raw_impact, %doc_freq, %query_norm_factor,
-    %normalized_impact, %term_freq, );
+my ( %searcher, %ORCompiler, %ORQuery, %subordinate );
 
 sub DESTROY {
     my $self = shift;
-    delete $include{$$self};
-    delete $raw_impact{$$self};
-    delete $query_norm_factor{$$self};
-    delete $searchable{$$self};
-    delete $normalized_impact{$$self};
-    delete $idf{$$self};
-    delete $doc_freq{$$self};
-    delete $term_freq{$$self};
+    delete $ORQuery{$$self};
+    delete $ORCompiler{$$self};
+    delete $searcher{$$self};
+    delete $subordinate{$$self};
     $self->SUPER::DESTROY;
 }
 
@@ -50,39 +45,41 @@ Returns a new Compiler object.
 =cut
 
 sub new {
-    my $class      = shift;
-    my %args       = @_;
-    my $include    = delete $args{include} || 0;
-    my $searchable = $args{searchable} || $args{searcher};
-    if ( !$searchable ) {
+    my $class    = shift;
+    my %args     = @_;
+    my $searcher = $args{searcher} || $args{searchable};
+    if ( !$searcher ) {
         croak "searcher required";
     }
-    my $self = $class->SUPER::new(%args);
-    $include{$$self}    = $include;
-    $searchable{$$self} = $searchable;
+
+    my $subordinate = delete $args{subordinate};
+    my $self        = $class->SUPER::new(%args);
+    $searcher{$$self}    = $searcher;
+    $subordinate{$$self} = $subordinate;
+
     return $self;
 }
 
 =head2 make_matcher( I<args> )
 
-Returns a LucyX::Search::AnyTermMatcher object.
+Returns a Lucy::Search::ORMatcher object.
+
+make_matcher() creates an ORQuery internally using all
+the terms associated with the parent AnyTermQuery->get_field() value,
+and returns the ORQuery's Matcher.
 
 =cut
 
 sub make_matcher {
     my ( $self, %args ) = @_;
 
-    my $seg_reader = $args{reader};
-    my $searchable = $searchable{$$self};
+    my $parent = $self->get_parent;
+    my $field  = $parent->get_field;
 
     # Retrieve low-level components
-    my $lex_reader   = $seg_reader->obtain("Lucy::Index::LexiconReader");
-    my $plist_reader = $seg_reader->obtain("Lucy::Index::PostingListReader");
-
-    # Acquire a Lexicon
-    my $parent  = $self->get_parent;
-    my $field   = $parent->get_field;
-    my $lexicon = $lex_reader->lexicon( field => $field );
+    my $seg_reader = $args{reader} or croak "reader required";
+    my $lex_reader = $seg_reader->obtain("Lucy::Index::LexiconReader");
+    my $lexicon    = $lex_reader->lexicon( field => $field );
 
     $DEBUG and warn "field:$field\n";
 
@@ -92,12 +89,8 @@ sub make_matcher {
         return;
     }
 
-    # Retrieve the correct Similarity for the Query's field.
-    my $sim = $args{similarity} || $searchable->get_schema->fetch_sim($field);
-
-    # Accumulate PostingLists for each matching term.
-    my @posting_lists;
-    my $include = $include{$$self};
+    # create ORQuery for all terms associated with $field
+    my @terms;
     while ( defined( my $lex_term = $lexicon->get_term ) ) {
 
         $DEBUG and warn sprintf( "\n lex_term='%s'\n",
@@ -109,180 +102,54 @@ sub make_matcher {
             next;
         }
 
-        my $posting_list = $plist_reader->posting_list(
-            field => $field,
+        push @terms,
+            Lucy::Search::TermQuery->new(
             term  => $lex_term,
-        );
+            field => $field,
+            );
 
-        if ($posting_list) {
-            push @posting_lists, $posting_list;
-            $parent->add_lex_term($lex_term);
-        }
         last unless $lexicon->next;
     }
 
-    $DEBUG and warn dump \@posting_lists;
+    return if !@terms;
 
-    return unless @posting_lists;
+    my $or_query = Lucy::Search::ORQuery->new( children => \@terms, );
+    $ORQuery{$$self} = $or_query;
+    my $or_compiler
+        = $or_query->make_compiler( searcher => $searcher{$$self} );
+    $ORCompiler{$$self} = $or_compiler;
+    return $or_compiler->make_matcher(%args);
 
-    $doc_freq{$$self} = scalar(@posting_lists);
-
-    # Calculate and store the IDF
-    my $max_doc = $searchable->doc_max;
-    my $idf     = $idf{$$self}
-        = $max_doc
-        ? $searchable->get_schema->fetch_type($field)->get_boost
-        + log( $max_doc / ( 1 + $doc_freq{$$self} ) )
-        : $searchable->get_schema->fetch_type($field)->get_boost;
-
-    $raw_impact{$$self} = $idf * $parent->get_boost;
-
-    $DEBUG and carp "raw_impact{$$self}= $raw_impact{$$self}";
-
-    # make final preparations
-    $self->_perform_query_normalization($searchable);
-
-    return LucyX::Search::AnyTermMatcher->new(
-        posting_lists => \@posting_lists,
-        compiler      => $self,
-    );
 }
 
-=head2 get_searchable
-
-Returns the Searchable object for this Compiler.
-
-=cut
-
-sub get_searchable {
+sub get_weight {
     my $self = shift;
-    return $searchable{$$self};
+    return $ORCompiler{$$self}->get_weight();
 }
 
-=head2 get_doc_freq
-
-Returns the document frequency for this Compiler.
-
-=cut
-
-sub get_doc_freq {
+sub get_similarity {
     my $self = shift;
-    return $doc_freq{$$self};
+    return $ORCompiler{$$self}->get_similarity();
 }
 
-sub _perform_query_normalization {
-
-    # copied from Lucy::Search::Weight originally
-    my ( $self, $searcher ) = @_;
-    my $sim    = $self->get_similarity;
-    my $factor = $self->sum_of_squared_weights;    # factor = ( tf_q * idf_t )
-    $factor = $sim->query_norm($factor);           # factor /= norm_q
-    $self->normalize($factor);                     # impact *= factor
-
-    #carp "normalize factor=$factor";
+sub normalize {
+    my $self = shift;
+    return $ORCompiler{$$self}->normalize();
 }
-
-=head2 apply_norm_factor( I<factor> )
-
-Overrides base class. Currently just passes I<factor> on to parent method.
-
-=cut
-
-sub apply_norm_factor {
-
-    # pass-through for now
-    my ( $self, $factor ) = @_;
-    $self->SUPER::apply_norm_factor($factor);
-}
-
-=head2 get_boost
-
-Returns the boost for the parent Query object.
-
-=cut
-
-sub get_boost { shift->get_parent->get_boost }
-
-=head2 sum_of_squared_weights
-
-Returns imact of term on score.
-
-=cut
 
 sub sum_of_squared_weights {
-
-    # pass-through for now
     my $self = shift;
-    return exists $raw_impact{$$self} ? $raw_impact{$$self}**2 : '1.0';
+    return $ORCompiler{$$self}->sum_of_squared_weights();
 }
 
-=head2 normalize()
-
-Affects the score of the term. See Lucy::Search::Compiler.
-
-=cut
-
-sub normalize {    # copied from TermQuery
-    my ( $self, $query_norm_factor ) = @_;
-    $query_norm_factor{$$self} = $query_norm_factor || 1;
-
-    # Multiply raw impact by ( tf_q * idf_q / norm_q )
-    #
-    # Note: factoring in IDF a second time is correct.  See formula.
-    #warn "raw_impact=$raw_impact{$$self}";
-    #warn "idf=$idf{$$self}";
-    #warn "query_norm_factor=$query_norm_factor";
-
-    $normalized_impact{$$self}
-        = $raw_impact{$$self} * $idf{$$self} * $query_norm_factor;
-
-    #carp "normalized_impact{$$self} = $normalized_impact{$$self}";
-    return $normalized_impact{$$self};
+sub apply_norm_factor {
+    my $self = shift;
+    return $self->SUPER::apply_norm_factor(@_);
 }
-
-=head2 highlight_spans( I<args> )
-
-See documentation in Lucy::Search::Query.
-
-Returns arrayref of Lucy::Search::Span objects.
-
-=cut
 
 sub highlight_spans {
-    my ( $self, %params ) = @_;
-
-    # call super method immediately just to test %params.
-    # it will always return empty array ref, which we can use.
-    my $spans  = $self->SUPER::highlight_spans(%params);
-    my $parent = $self->get_parent;
-    my $term   = $parent->get_term;
-
-    return $spans unless defined $term and length $term;
-    return $spans unless $parent->get_field eq $params{field};
-
-    my $lex_terms = $parent->get_lex_terms;
-    for my $t (@$lex_terms) {
-
-        my $term_vec = $params{doc_vec}
-            ->term_vector( field => $params{field}, term => $t );
-        next unless $term_vec;
-
-        my $starts = $term_vec->get_start_offsets->to_arrayref;
-        my $ends   = $term_vec->get_end_offsets->to_arrayref;
-        my $i      = 0;
-        for my $s (@$starts) {
-            my $len = $ends->[ $i++ ] - $s;
-            push @$spans,
-                Lucy::Search::Span->new(
-                offset => $s,
-                length => $len,
-                weight => $parent->get_boost,
-                );
-        }
-
-    }
-
-    return $spans;
+    my $self = shift;
+    return $ORCompiler{$$self}->highlight_spans(@_);
 }
 
 1;

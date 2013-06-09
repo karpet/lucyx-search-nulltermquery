@@ -131,17 +131,17 @@ Returns a LucyX::Search::NullCompiler object.
 sub make_compiler {
     my $self        = shift;
     my %args        = @_;
-    my $subordinate = delete $args{subordinate};    # new in Lucy 0.2.2
     $args{parent}  = $self;
-    $args{include} = 1;
-    my $compiler = LucyX::Search::AnyTermCompiler->new(%args);
+    return LucyX::Search::AnyTermCompiler->new(%args);
 
+    # TODO should our compiler call this in make_matcher() ?
+    
     # unlike Search::Query synopsis, normalize()
     # is called internally in $compiler.
     # This should be fixed in a C re-write.
     #$compiler->normalize unless $subordinate;
 
-    return $compiler;
+    #return $compiler;
 }
 
 1;
