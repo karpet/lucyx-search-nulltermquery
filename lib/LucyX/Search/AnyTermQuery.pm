@@ -34,12 +34,11 @@ methods are documented here.
 
 # Inside-out member vars
 my %field;
-my %lex_terms;
 
 =head2 new( I<args> )
 
-Create a new AnyTermQuery object. I<args> must contain key/value pairs
-for C<field> and C<term>.
+Create a new AnyTermQuery object. I<args> must contain key/value pair
+for C<field>.
 
 =cut
 
@@ -61,35 +60,9 @@ Retrieve the value set in new().
 
 sub get_field { my $self = shift; return $field{$$self} }
 
-=head2 add_lex_term( I<term> )
-
-Push I<term> onto the stack of lexicon terms that this Query matches.
-
-=cut
-
-sub add_lex_term {
-    my $self = shift;
-    my $t    = shift;
-    croak "term required" unless defined $t;
-    $lex_terms{$$self}->{$t}++;
-}
-
-=head2 get_lex_terms
-
-Returns array ref of terms in the lexicons that this
-query matches.
-
-=cut
-
-sub get_lex_terms {
-    my $self = shift;
-    return [ keys %{ $lex_terms{$$self} } ];
-}
-
 sub DESTROY {
     my $self = shift;
     delete $field{$$self};
-    delete $lex_terms{$$self};
     $self->SUPER::DESTROY;
 }
 
@@ -129,13 +102,13 @@ Returns a LucyX::Search::NullCompiler object.
 =cut
 
 sub make_compiler {
-    my $self        = shift;
-    my %args        = @_;
-    $args{parent}  = $self;
+    my $self = shift;
+    my %args = @_;
+    $args{parent} = $self;
     return LucyX::Search::AnyTermCompiler->new(%args);
 
     # TODO should our compiler call this in make_matcher() ?
-    
+
     # unlike Search::Query synopsis, normalize()
     # is called internally in $compiler.
     # This should be fixed in a C re-write.
