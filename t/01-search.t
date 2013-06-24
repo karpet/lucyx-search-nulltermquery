@@ -96,6 +96,7 @@ my %queries = (
     'color!:NULL'    => 5,
     'option:NULL'    => 1,
     'title!:NULL'    => 5,
+    'NOT title:NULL' => 5,
     'nullfield:NULL' => 6,
 );
 
