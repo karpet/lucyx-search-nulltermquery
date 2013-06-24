@@ -95,7 +95,8 @@ my %queries = (
     'color:NULL'     => 1,
     'color!:NULL'    => 5,
     'option:NULL'    => 1,
-    'title!:NULL'    => 5,
+    'title!:NULL'    => 5,    # this and next should parse identically
+    'NOT title:NULL' => 5,
     'nullfield:NULL' => 6,
 );
 
@@ -139,7 +140,7 @@ sub make_query {
 
     #diag("field == \'$field\'  op=$op");
     my $query;
-    if ( $op eq '!:' ) {
+    if ( $op eq '!:' or $str =~ m/^NOT/ ) {
         $query = LucyX::Search::AnyTermQuery->new( field => $field, );
     }
     else {
