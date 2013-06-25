@@ -92,7 +92,7 @@ Returns the query clause the object represents.
 
 sub to_string {
     my $self = shift;
-    return sprintf( "NOT %s:NULL", $self->get_field );
+    return sprintf( "(NOT %s:NULL)", $self->get_field );
 }
 
 =head2 make_compiler
