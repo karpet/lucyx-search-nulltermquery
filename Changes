@@ -8,3 +8,5 @@ Revision history for LucyX-Search-NullTermQuery
 
 0.003   xxx
         * add parens around to_string() output
+        * add AnyTermCompiler->get_child_compiler method,
+          refactoring to use it internally.
