@@ -144,8 +144,8 @@ Delegates to ORCompiler child.
 sub get_weight {
     my $self = shift;
     return $self->get_child_compiler
-        ? $self->get_child_compiler->get_weight()
-        : 0;
+        ? $self->get_child_compiler->get_weight(@_)
+        : $self->SUPER::get_weight(@_);
 }
 
 =head2 get_similarity
@@ -157,8 +157,8 @@ Delegates to ORCompiler child.
 sub get_similarity {
     my $self = shift;
     return $self->get_child_compiler
-        ? $self->get_child_compiler->get_similarity()
-        : 0;
+        ? $self->get_child_compiler->get_similarity(@_)
+        : $self->SUPER::get_similarity(@_);
 }
 
 =head2 normalize
@@ -170,8 +170,8 @@ Delegates to ORCompiler child.
 sub normalize {
     my $self = shift;
     return $self->get_child_compiler
-        ? $self->get_child_compiler->normalize()
-        : 0;
+        ? $self->get_child_compiler->normalize(@_)
+        : $self->SUPER::normalize(@_);
 }
 
 =head2 sum_of_squared_weights
@@ -183,8 +183,8 @@ Delegates to ORCompiler child.
 sub sum_of_squared_weights {
     my $self = shift;
     return $self->get_child_compiler
-        ? $self->get_child_compiler->sum_of_squared_weights()
-        : 0;
+        ? $self->get_child_compiler->sum_of_squared_weights(@_)
+        : $self->SUPER::sum_of_squared_weights(@_);
 }
 
 =head2 highlight_spans
@@ -197,7 +197,7 @@ sub highlight_spans {
     my $self = shift;
     return $self->get_child_compiler
         ? $self->get_child_compiler->highlight_spans(@_)
-        : 0;
+        : $self->SUPER::highlight_spans(@_);
 }
 
 1;
