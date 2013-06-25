@@ -6,7 +6,7 @@ Revision history for LucyX-Search-NullTermQuery
 0.002    08 June 2013
         * administrative release only
 
-0.003   xxx
+0.003   25 June 2013
         * add parens around to_string() output
         * add AnyTermCompiler->get_child_compiler method,
           refactoring to use it internally.
