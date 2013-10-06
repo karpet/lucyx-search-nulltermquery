@@ -100,51 +100,60 @@ my %queries = (
     'nullfield:NULL' => 6,
 );
 
-for my $str ( sort keys %queries ) {
-    my $query = make_query($str);
+for my $term_limit ( ( 0, 1, 5 ) ) {
+    for my $str ( sort keys %queries ) {
+        my $query = make_query( $str, $term_limit );
 
-    my $hits_expected = $queries{$str};
-    if ( ref $hits_expected ) {
-        $query->debug(1);
-        $hits_expected = $hits_expected->[0];
-    }
-
-    #diag($query);
-    my $hits = $searcher->hits(
-        query      => $query,
-        offset     => 0,
-        num_wanted => 10,       # more than we have
-    );
-
-    is( $hits->total_hits, $hits_expected, "$str == $hits_expected" );
-
-    if ( $hits->total_hits != $hits_expected ) {
-        diag( dump( $query->dump ) );
-
-        my $count = 0;
-        while ( my $hit = $hits->next ) {
-            $count++;
-            diag( " [$count] hit: " . $hit->{uri} );
+        my $hits_expected = $queries{$str};
+        if ( ref $hits_expected ) {
+            $query->debug(1);
+            $hits_expected = $hits_expected->[0];
         }
-    }
 
+        #diag($query);
+        my $hits = $searcher->hits(
+            query      => $query,
+            offset     => 0,
+            num_wanted => 10,       # more than we have
+        );
+
+        is( $hits->total_hits, $hits_expected, "$str == $hits_expected" );
+
+        if ( $hits->total_hits != $hits_expected ) {
+            diag( dump( $query->dump ) );
+
+            my $count = 0;
+            while ( my $hit = $hits->next ) {
+                $count++;
+                diag( " [$count] hit: " . $hit->{uri} );
+            }
+        }
+
+    }
 }
 
 # allow for adding new queries without adjusting test count
-done_testing( scalar( keys %queries ) + 2 );
+done_testing( ( scalar( keys %queries ) * 3 ) + 2 );
 
 sub make_query {
-    my $str = shift;
+    my $str        = shift;
+    my $term_limit = shift;
 
     my ( $field, $op ) = ( $str =~ m/(\w+)(!?:)NULL/ );
 
     #diag("field == \'$field\'  op=$op");
     my $query;
     if ( $op eq '!:' or $str =~ m/^NOT/ ) {
-        $query = LucyX::Search::AnyTermQuery->new( field => $field, );
+        $query = LucyX::Search::AnyTermQuery->new(
+            field      => $field,
+            term_limit => $term_limit,
+        );
     }
     else {
-        $query = LucyX::Search::NullTermQuery->new( field => $field, );
+        $query = LucyX::Search::NullTermQuery->new(
+            field      => $field,
+            term_limit => $term_limit,
+        );
     }
     return $query;
 }

@@ -6,7 +6,7 @@ use Carp;
 use Scalar::Util qw( blessed );
 use LucyX::Search::AnyTermCompiler;
 
-our $VERSION = '0.003';
+our $VERSION = '0.004';
 
 =head1 NAME
 
@@ -34,6 +34,7 @@ methods are documented here.
 
 # Inside-out member vars
 my %field;
+my %term_limit;
 
 =head2 new( I<args> )
 
@@ -45,10 +46,12 @@ for C<field>.
 sub new {
     my ( $class, %args ) = @_;
     my $field = delete $args{field};
+    my $limit = delete $args{term_limit} || 1000;
     my $self  = $class->SUPER::new(%args);
     confess("'field' param is required")
         unless defined $field;
-    $field{$$self} = $field;
+    $field{$$self}      = $field;
+    $term_limit{$$self} = $limit;
     return $self;
 }
 
@@ -63,6 +66,7 @@ sub get_field { my $self = shift; return $field{$$self} }
 sub DESTROY {
     my $self = shift;
     delete $field{$$self};
+    delete $term_limit{$$self};
     $self->SUPER::DESTROY;
 }
 
@@ -105,7 +109,10 @@ sub make_compiler {
     my $self = shift;
     my %args = @_;
     $args{parent} = $self;
-    return LucyX::Search::AnyTermCompiler->new(%args);
+    return LucyX::Search::AnyTermCompiler->new(
+        term_limit => $term_limit{$$self},
+        %args
+    );
 
     # TODO should our compiler call this in make_matcher() ?
 

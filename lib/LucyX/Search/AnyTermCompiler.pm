@@ -5,21 +5,23 @@ use base qw( Lucy::Search::Compiler );
 use Carp;
 use Lucy::Search::ORQuery;
 use Lucy::Search::TermQuery;
+use LucyX::Search::WildcardQuery;
 use Data::Dump qw( dump );
 
-our $VERSION = '0.003';
+our $VERSION = '0.004';
 
 my $DEBUG = $ENV{LUCYX_DEBUG} || 0;
 
 # inside out vars
-my ( %searcher, %ORCompiler, %ORQuery, %subordinate );
+my ( %searcher, %ChildCompiler, %ChildQuery, %subordinate, %term_limit );
 
 sub DESTROY {
     my $self = shift;
-    delete $ORQuery{$$self};
-    delete $ORCompiler{$$self};
+    delete $ChildQuery{$$self};
+    delete $ChildCompiler{$$self};
     delete $searcher{$$self};
     delete $subordinate{$$self};
+    delete $term_limit{$$self};
     $self->SUPER::DESTROY;
 }
 
@@ -42,6 +44,11 @@ or overridden methods are documented.
 
 Returns a new Compiler object.
 
+I<args> may contain optional B<term_limit> key/value pair.
+If the number of unique values for the relevant field exceeds
+the limit, a WildcardQuery will be used internally instead of an ORQuery,
+as an optimization.
+
 =cut
 
 sub new {
@@ -53,20 +60,33 @@ sub new {
     }
 
     my $subordinate = delete $args{subordinate};
+    my $limit       = delete $args{term_limit} || 1000;
     my $self        = $class->SUPER::new(%args);
     $searcher{$$self}    = $searcher;
     $subordinate{$$self} = $subordinate;
+    $term_limit{$$self}  = $limit;
 
     return $self;
 }
 
+=head2 get_term_limit
+
+Returns the I<term_limit> set in new.
+
+=cut
+
+sub get_term_limit {
+    my $self = shift;
+    return $term_limit{$$self};
+}
+
 =head2 make_matcher( I<args> )
 
-Returns a Lucy::Search::ORMatcher object.
+Returns a Lucy::Search::Matcher-based object.
 
-make_matcher() creates a Lucy::Search::ORQuery internally using all
-the terms associated with the parent AnyTermQuery field value,
-and returns the ORQuery's Matcher.
+make_matcher() creates a Lucy::Search::ORQuery or LucyX::Search::WildcardQuery
+internally based on the terms associated with the parent AnyTermQuery field value,
+and returns the internal Query's Matcher.
 
 =cut
 
@@ -91,6 +111,8 @@ sub make_matcher {
 
     # create ORQuery for all terms associated with $field
     my @terms;
+    my $limit        = $self->get_term_limit();
+    my $use_wildcard = 0;
     while ( defined( my $lex_term = $lexicon->get_term ) ) {
 
         $DEBUG and warn sprintf( "\n lex_term='%s'\n",
@@ -109,35 +131,51 @@ sub make_matcher {
             );
 
         last unless $lexicon->next;
+        if ( scalar @terms > $limit ) {
+            $use_wildcard = 1;
+            last;
+        }
     }
 
     return if !@terms;
 
+    if ($use_wildcard) {
+
+        my $wcq = LucyX::Search::WildcardQuery->new(
+            field => $field,
+            term  => '?*'
+        );
+        $ChildQuery{$$self} = $wcq;
+        my $wcc = $wcq->make_compiler( searcher => $searcher{$$self} );
+        $ChildCompiler{$$self} = $wcc;
+        return $wcc->make_matcher(%args);
+    }
+
     $DEBUG and warn dump \@terms;
 
     my $or_query = Lucy::Search::ORQuery->new( children => \@terms, );
-    $ORQuery{$$self} = $or_query;
+    $ChildQuery{$$self} = $or_query;
     my $or_compiler
         = $or_query->make_compiler( searcher => $searcher{$$self} );
-    $ORCompiler{$$self} = $or_compiler;
+    $ChildCompiler{$$self} = $or_compiler;
     return $or_compiler->make_matcher(%args);
 
 }
 
 =head2 get_child_compiler
 
-Returns the child ORCompiler, or undef if not defined.
+Returns the child Compiler, or undef if not defined.
 
 =cut
 
 sub get_child_compiler {
     my $self = shift;
-    return $ORCompiler{$$self};
+    return $ChildCompiler{$$self};
 }
 
 =head2 get_weight
 
-Delegates to ORCompiler child.
+Delegates to ChildCompiler child.
 
 =cut
 
@@ -150,7 +188,7 @@ sub get_weight {
 
 =head2 get_similarity
 
-Delegates to ORCompiler child.
+Delegates to ChildCompiler child.
 
 =cut
 
@@ -163,7 +201,7 @@ sub get_similarity {
 
 =head2 normalize
 
-Delegates to ORCompiler child.
+Delegates to ChildCompiler child.
 
 =cut
 
@@ -176,7 +214,7 @@ sub normalize {
 
 =head2 sum_of_squared_weights
 
-Delegates to ORCompiler child.
+Delegates to ChildCompiler child.
 
 =cut
 
@@ -189,7 +227,7 @@ sub sum_of_squared_weights {
 
 =head2 highlight_spans
 
-Delegates to ORCompiler child.
+Delegates to ChildCompiler child.
 
 =cut
 

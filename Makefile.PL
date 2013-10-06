@@ -20,9 +20,10 @@ WriteMakefile(
         : () ),
     PL_FILES  => {},
     PREREQ_PM => {
-        'Test::More' => 0,
-        'Lucy'       => '0.003000',
-        'Data::Dump' => 0,
+        'Test::More'                   => 0,
+        'Lucy'                         => '0.003000',
+        'Data::Dump'                   => 0,
+        'LucyX::Search::WildcardQuery' => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES    => 'LucyX-Search-NullTermQuery-*' },

@@ -1,5 +1,8 @@
 Revision history for LucyX-Search-NullTermQuery
 
+0.004 xxx
+ - internal refactor to optimize using WildcardQuery
+
 0.003 25 June 2013
  - add parens around to_string() output
  - add AnyTermCompiler->get_child_compiler method, refactoring to use it
