@@ -1,5 +1,8 @@
 Revision history for LucyX-Search-NullTermQuery
 
+0.005 xxx
+ - refactor of term_limit option
+
 0.004 06 Oct 2013
  - add term_limit feature to optimize using WildcardQuery
 
