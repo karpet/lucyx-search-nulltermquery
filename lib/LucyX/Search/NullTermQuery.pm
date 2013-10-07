@@ -13,7 +13,6 @@ LucyX::Search::NullTermQuery - Lucy query extension for NULL values
 
 =head1 SYNOPSIS
 
-
  my $query = LucyX::Search::NullTermQuery->new(
     field   => 'color',
  );
@@ -24,7 +23,7 @@ LucyX::Search::NullTermQuery - Lucy query extension for NULL values
 NullTermQuery is for matching documents in a Lucy index
 that have no value for a field.
 
-NullTermQuery isa NOTQuery negating an AnyTermQuery.
+NullTermQuery isa NOTQuery negating a L<LucyX::Search::AnyTermQuery>.
 
 =head1 METHODS
 

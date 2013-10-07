@@ -55,6 +55,14 @@ sub new {
     return $self;
 }
 
+=head2 get_term_limit
+
+Retrieve the term_limit set in new().
+
+=cut
+
+sub get_term_limit { my $self = shift; return $term_limit{$$self}; }
+
 =head2 get_field
 
 Retrieve the value set in new().
@@ -109,10 +117,7 @@ sub make_compiler {
     my $self = shift;
     my %args = @_;
     $args{parent} = $self;
-    return LucyX::Search::AnyTermCompiler->new(
-        term_limit => $term_limit{$$self},
-        %args
-    );
+    return LucyX::Search::AnyTermCompiler->new( %args );
 
     # TODO should our compiler call this in make_matcher() ?
 

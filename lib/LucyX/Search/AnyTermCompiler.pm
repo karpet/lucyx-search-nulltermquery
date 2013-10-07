@@ -13,7 +13,7 @@ our $VERSION = '0.004';
 my $DEBUG = $ENV{LUCYX_DEBUG} || 0;
 
 # inside out vars
-my ( %searcher, %ChildCompiler, %ChildQuery, %subordinate, %term_limit );
+my ( %searcher, %ChildCompiler, %ChildQuery, %subordinate, );
 
 sub DESTROY {
     my $self = shift;
@@ -21,7 +21,6 @@ sub DESTROY {
     delete $ChildCompiler{$$self};
     delete $searcher{$$self};
     delete $subordinate{$$self};
-    delete $term_limit{$$self};
     $self->SUPER::DESTROY;
 }
 
@@ -44,11 +43,6 @@ or overridden methods are documented.
 
 Returns a new Compiler object.
 
-I<args> may contain optional B<term_limit> key/value pair.
-If the number of unique values for the relevant field exceeds
-the limit, a WildcardQuery will be used internally instead of an ORQuery,
-as an optimization.
-
 =cut
 
 sub new {
@@ -60,24 +54,11 @@ sub new {
     }
 
     my $subordinate = delete $args{subordinate};
-    my $limit = delete $args{term_limit} || $ENV{LUCYX_TERM_LIMIT} || 1000;
-    my $self  = $class->SUPER::new(%args);
+    my $self        = $class->SUPER::new(%args);
     $searcher{$$self}    = $searcher;
     $subordinate{$$self} = $subordinate;
-    $term_limit{$$self}  = $limit;
 
     return $self;
-}
-
-=head2 get_term_limit
-
-Returns the I<term_limit> set in new.
-
-=cut
-
-sub get_term_limit {
-    my $self = shift;
-    return $term_limit{$$self};
 }
 
 =head2 make_matcher( I<args> )
@@ -111,7 +92,7 @@ sub make_matcher {
 
     # create ORQuery for all terms associated with $field
     my @terms;
-    my $limit        = $self->get_term_limit();
+    my $limit        = $parent->get_term_limit();
     my $use_wildcard = 0;
     while ( defined( my $lex_term = $lexicon->get_term ) ) {
 
