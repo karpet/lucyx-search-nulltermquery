@@ -1,7 +1,7 @@
 Revision history for LucyX-Search-NullTermQuery
 
-0.004 xxx
- - internal refactor to optimize using WildcardQuery
+0.004 06 Oct 2013
+ - add term_limit feature to optimize using WildcardQuery
 
 0.003 25 June 2013
  - add parens around to_string() output
