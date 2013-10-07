@@ -8,7 +8,7 @@ use Lucy::Search::TermQuery;
 use LucyX::Search::WildcardQuery;
 use Data::Dump qw( dump );
 
-our $VERSION = '0.004';
+our $VERSION = '0.005';
 
 my $DEBUG = $ENV{LUCYX_DEBUG} || 0;
 
