@@ -60,8 +60,8 @@ sub new {
     }
 
     my $subordinate = delete $args{subordinate};
-    my $limit       = delete $args{term_limit} || 1000;
-    my $self        = $class->SUPER::new(%args);
+    my $limit = delete $args{term_limit} || $ENV{LUCYX_TERM_LIMIT} || 1000;
+    my $self  = $class->SUPER::new(%args);
     $searcher{$$self}    = $searcher;
     $subordinate{$$self} = $subordinate;
     $term_limit{$$self}  = $limit;

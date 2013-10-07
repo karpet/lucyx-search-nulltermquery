@@ -46,7 +46,7 @@ for C<field>.
 sub new {
     my ( $class, %args ) = @_;
     my $field = delete $args{field};
-    my $limit = delete $args{term_limit} || 1000;
+    my $limit = delete $args{term_limit} || $ENV{LUCYX_TERM_LIMIT} || 1000;
     my $self  = $class->SUPER::new(%args);
     confess("'field' param is required")
         unless defined $field;
