@@ -5,13 +5,14 @@ use base qw( Lucy::Search::NOTQuery );
 use Carp;
 use LucyX::Search::AnyTermQuery;
 
-our $VERSION = '0.005';
+our $VERSION = '0.003';
 
 =head1 NAME
 
 LucyX::Search::NullTermQuery - Lucy query extension for NULL values
 
 =head1 SYNOPSIS
+
 
  my $query = LucyX::Search::NullTermQuery->new(
     field   => 'color',
@@ -23,7 +24,7 @@ LucyX::Search::NullTermQuery - Lucy query extension for NULL values
 NullTermQuery is for matching documents in a Lucy index
 that have no value for a field.
 
-NullTermQuery isa NOTQuery negating a L<LucyX::Search::AnyTermQuery>.
+NullTermQuery isa NOTQuery negating an AnyTermQuery.
 
 =head1 METHODS
 

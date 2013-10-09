@@ -5,20 +5,19 @@ use base qw( Lucy::Search::Compiler );
 use Carp;
 use Lucy::Search::ORQuery;
 use Lucy::Search::TermQuery;
-use LucyX::Search::WildcardQuery;
 use Data::Dump qw( dump );
 
-our $VERSION = '0.005';
+our $VERSION = '0.003';
 
 my $DEBUG = $ENV{LUCYX_DEBUG} || 0;
 
 # inside out vars
-my ( %searcher, %ChildCompiler, %ChildQuery, %subordinate, );
+my ( %searcher, %ORCompiler, %ORQuery, %subordinate );
 
 sub DESTROY {
     my $self = shift;
-    delete $ChildQuery{$$self};
-    delete $ChildCompiler{$$self};
+    delete $ORQuery{$$self};
+    delete $ORCompiler{$$self};
     delete $searcher{$$self};
     delete $subordinate{$$self};
     $self->SUPER::DESTROY;
@@ -63,11 +62,11 @@ sub new {
 
 =head2 make_matcher( I<args> )
 
-Returns a Lucy::Search::Matcher-based object.
+Returns a Lucy::Search::ORMatcher object.
 
-make_matcher() creates a Lucy::Search::ORQuery or LucyX::Search::WildcardQuery
-internally based on the terms associated with the parent AnyTermQuery field value,
-and returns the internal Query's Matcher.
+make_matcher() creates a Lucy::Search::ORQuery internally using all
+the terms associated with the parent AnyTermQuery field value,
+and returns the ORQuery's Matcher.
 
 =cut
 
@@ -92,8 +91,6 @@ sub make_matcher {
 
     # create ORQuery for all terms associated with $field
     my @terms;
-    my $limit        = $parent->get_term_limit();
-    my $use_wildcard = 0;
     while ( defined( my $lex_term = $lexicon->get_term ) ) {
 
         $DEBUG and warn sprintf( "\n lex_term='%s'\n",
@@ -112,51 +109,35 @@ sub make_matcher {
             );
 
         last unless $lexicon->next;
-        if ( scalar @terms > $limit ) {
-            $use_wildcard = 1;
-            last;
-        }
     }
 
     return if !@terms;
 
-    if ($use_wildcard) {
-
-        my $wcq = LucyX::Search::WildcardQuery->new(
-            field => $field,
-            term  => '?*'
-        );
-        $ChildQuery{$$self} = $wcq;
-        my $wcc = $wcq->make_compiler( searcher => $searcher{$$self} );
-        $ChildCompiler{$$self} = $wcc;
-        return $wcc->make_matcher(%args);
-    }
-
     $DEBUG and warn dump \@terms;
 
     my $or_query = Lucy::Search::ORQuery->new( children => \@terms, );
-    $ChildQuery{$$self} = $or_query;
+    $ORQuery{$$self} = $or_query;
     my $or_compiler
         = $or_query->make_compiler( searcher => $searcher{$$self} );
-    $ChildCompiler{$$self} = $or_compiler;
+    $ORCompiler{$$self} = $or_compiler;
     return $or_compiler->make_matcher(%args);
 
 }
 
 =head2 get_child_compiler
 
-Returns the child Compiler, or undef if not defined.
+Returns the child ORCompiler, or undef if not defined.
 
 =cut
 
 sub get_child_compiler {
     my $self = shift;
-    return $ChildCompiler{$$self};
+    return $ORCompiler{$$self};
 }
 
 =head2 get_weight
 
-Delegates to ChildCompiler child.
+Delegates to ORCompiler child.
 
 =cut
 
@@ -169,7 +150,7 @@ sub get_weight {
 
 =head2 get_similarity
 
-Delegates to ChildCompiler child.
+Delegates to ORCompiler child.
 
 =cut
 
@@ -182,7 +163,7 @@ sub get_similarity {
 
 =head2 normalize
 
-Delegates to ChildCompiler child.
+Delegates to ORCompiler child.
 
 =cut
 
@@ -195,7 +176,7 @@ sub normalize {
 
 =head2 sum_of_squared_weights
 
-Delegates to ChildCompiler child.
+Delegates to ORCompiler child.
 
 =cut
 
@@ -208,7 +189,7 @@ sub sum_of_squared_weights {
 
 =head2 highlight_spans
 
-Delegates to ChildCompiler child.
+Delegates to ORCompiler child.
 
 =cut
 

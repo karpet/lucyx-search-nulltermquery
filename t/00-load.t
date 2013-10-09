@@ -3,7 +3,7 @@
 use Test::More tests => 1;
 
 BEGIN {
-    use_ok( 'LucyX::Search::NullTermQuery' );
+    use_ok( 'LucyX::Search::AnyTermQuery' );
 }
 
-diag( "Testing LucyX::Search::NullTermQuery $LucyX::Search::NullTermQuery::VERSION, Perl $], $^X" );
+diag( "Testing LucyX::Search::AnyTermQuery $LucyX::Search::AnyTermQuery::VERSION, Perl $], $^X" );
