@@ -1,6 +1,6 @@
 Revision history for LucyX-Search-NullTermQuery
 
-0.005 xxx
+0.005 09 Oct 2013
  - remove term_limit option. Is not any faster than ORQuery.
 
 0.004 06 Oct 2013
