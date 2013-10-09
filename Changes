@@ -1,5 +1,11 @@
 Revision history for LucyX-Search-NullTermQuery
 
+0.005 xxx
+ - remove term_limit option. Is not any faster than ORQuery.
+
+0.004 06 Oct 2013
+ - add term_limit feature to optimize using WildcardQuery
+
 0.003 25 June 2013
  - add parens around to_string() output
  - add AnyTermCompiler->get_child_compiler method, refactoring to use it
