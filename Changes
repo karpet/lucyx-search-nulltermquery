@@ -1,5 +1,9 @@
 Revision history for LucyX-Search-NullTermQuery
 
+0.006 01 Sept 2014
+ - Lucy 0.4.0 reveals that 'boost' param was not being
+   passed the delegate ORCompiler
+
 0.005 09 Oct 2013
  - remove term_limit option. Is not any faster than ORQuery.
 
